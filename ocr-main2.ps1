@@ -37,7 +37,8 @@ function ExtractData ($jsonObject)
     #we'll search using the given order wich already is from top/left to bottom/right
     for ($i = 0; $i -lt $jsonObject.regions.lines.words.Count; $i++) 
     {       
-        if ($jsonObject.regions.lines.words[$i].text -like "*M?N*") 
+        if ($jsonObject.regions.lines.words[$i].text -like "*M?N*" -or 
+            $jsonObject.regions.lines.words[$i].text -like "*MOD*" ) 
         {
             $modelNumber = $jsonObject.regions.lines.words[$i+1].text
             break;
@@ -47,7 +48,8 @@ function ExtractData ($jsonObject)
     #same for serial number
     for ($j = 0; $j -lt $jsonObject.regions.lines.words.Count; $j++) 
     {       
-        if ($jsonObject.regions.lines.words[$j].text -like "*S?N*") 
+        if ($jsonObject.regions.lines.words[$j].text -like "*S?N*" -or 
+            $jsonObject.regions.lines.words[$i].text -like "*SER*") 
         {
             $serialNumber = $jsonObject.regions.lines.words[$j+1].text
             break;
@@ -87,7 +89,7 @@ $outputTableName = "ocrresult"
 
 "" > "D:\work\cbre\ai\ocr\summary.txt"
 
-foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-lennox") 
+foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-trane") 
 {    
     $blobFullUrl = $blobContainerUrl + $blob.Name + $sasQueryString
     $body = "{""url"":""$blobFullUrl""}"
@@ -105,7 +107,9 @@ foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -
 
     $data = ExtractData($response)
 
-    "Detected: MN=$($data.ModelNumber); SN=$($data.SerialNumber); CO=$($data.Manufacturer) for $rowkey" >> "D:\work\cbre\ai\ocr\summary.txt"
+    $msg = "Detected: MN=$($data.ModelNumber); SN=$($data.SerialNumber); CO=$($data.Manufacturer) for $rowkey"
+    Write-Output $msg
+    $msg >> "D:\work\cbre\ai\ocr\summary_all.txt"
 
     #also write to file
     $responseRaw > "D:\work\cbre\ai\ocr\results\$($rowKey).json"
