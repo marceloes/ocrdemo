@@ -35,8 +35,8 @@ function ExtractData ($jsonObject)
 
     #usually the model number is the next text detected after the keyword MIN
     #we'll search using the given order wich already is from top/left to bottom/right
-    for ($i = 0; $i -lt $jsonObject.regions.lines.words.Count; $i++) 
-    {       
+    for ($i = 0; $i -lt $jsonObject.regions.lines.Count; $i++) 
+    {             
         if ($jsonObject.regions.lines.words[$i].text -like "*M?N*" -or 
             $jsonObject.regions.lines.words[$i].text -like "*MOD*" ) 
         {
@@ -87,10 +87,12 @@ $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -
 $outputTableName = "ocrresult"
 #$outputTable = (Get-AzStorageTable -Name $outputTableName -Context $storageContext).CloudTable
 
-"" > "D:\work\cbre\ai\ocr\summary.txt"
+#"" > "D:\work\cbre\ai\ocr\summary.txt"
 
-foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-trane") 
-{    
+foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-other") 
+{
+    Write-Output "Analyzing $($blob.Name) ..."    
+    
     $blobFullUrl = $blobContainerUrl + $blob.Name + $sasQueryString
     $body = "{""url"":""$blobFullUrl""}"
     $url = $baseUrl + $apiSuffix + $apiOptions
@@ -98,18 +100,14 @@ foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -
     $responseRaw = (curl -Uri $url -Headers $headers -Body $body -Method Post).Content
     $response = $responseRaw | ConvertFrom-Json
 
-    #this one below needs module AzTable to be installed
     $rowKey = $blob.Name.Replace("/","-")
-    $prop = @{"json"=$response}
-    #Add-AzTableRow -Table $outputTable -PartitionKey "ptkey1" -RowKey $rowKey -property $prop -UpdateExisting
 
     #extract manufacturer, serial number and model number
+    #$data = ExtractData($response)
 
-    $data = ExtractData($response)
-
-    $msg = "Detected: MN=$($data.ModelNumber); SN=$($data.SerialNumber); CO=$($data.Manufacturer) for $rowkey"
-    Write-Output $msg
-    $msg >> "D:\work\cbre\ai\ocr\summary_all.txt"
+    #$msg = "Detected: MN=$($data.ModelNumber); SN=$($data.SerialNumber); CO=$($data.Manufacturer) for $rowkey"
+    #Write-Output $msg
+    #$msg >> "D:\work\cbre\ai\ocr\summary_all.txt"
 
     #also write to file
     $responseRaw > "D:\work\cbre\ai\ocr\results\$($rowKey).json"

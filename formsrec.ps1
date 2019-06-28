@@ -1,73 +1,124 @@
-function TrainModel($blobContainerUrl, $prefix)
+function CleanupModels
 {
-    $ApiSuffix = "formrecognizer/v1.0-preview/custom/train"
-
-    #web request parameters
+    #Retrieve all models
+    $ApiSuffix = "formrecognizer/v1.0-preview/custom/models"
     $headers = @{   "Ocp-Apim-Subscription-Key"="$subscriptionKey";
                     "Content-Type"="application/json"
     }
-    $body = "{""source"":""$blobContainerUrl"",""sourceFilter"":{""prefix"":""$prefix"",""includeSubFolders"":true}"   
     $url = $baseUrl + $apiSuffix
-    $response = (curl -Uri $url -Headers $headers -Body $body -Method Post).Content | ConvertFrom-Json
+    $response = (Invoke-WebRequest -Uri $url -Headers $headers -Method Get).Content | ConvertFrom-Json
+
+    #Delete each model    
+    foreach ($model in $response.models) 
+    {
+        Write-Output "Deleting model $($model.modelId)"
+        $ApiSuffix = "formrecognizer/v1.0-preview/custom/models/$($model.modelId)"
+        $url = $baseUrl + $apiSuffix
+        $response = Invoke-WebRequest -Uri $url -Headers $headers -Method Delete
+    }
+}
+function TrainModel($blobContainerUrl, $prefix)
+{
+    Write-host "Training model for $blobContainerUrl"
+    $ApiSuffix = "formrecognizer/v1.0-preview/custom/train"
+    $headers = @{   "Ocp-Apim-Subscription-Key"="$subscriptionKey";
+                    "Content-Type"="application/json"
+    }
+    $body = "{""source"":""$blobContainerUrl"",""sourceFilter"":{""prefix"":""$prefix"",""includeSubFolders"":true}}"   
+    $url = $baseUrl + $apiSuffix
+    $response = (Invoke-WebRequest -Uri $url -Headers $headers -Body $body -Method Post).Content
+
+    $response > ./trainmodelresponse.json
+
+    $response = $response | ConvertFrom-Json
 
     #Return Model Id
+    write-host "Model id = " + $response.modelId
     $response.modelId
 }
 
-function AnalyzeForm($modelId, $blobContainerUrl)
+function AnalyzeForm($modelId, $fileName, $contentType)
 {
     $ApiSuffix = "formrecognizer/v1.0-preview/custom/models/$modelId/analyze"
     #web request parameters
     $headers = @{   "Ocp-Apim-Subscription-Key"="$subscriptionKey";
-                    "Content-Type"="application/json"
+                    "Content-Type"="multipart/form-data"
     }
     $url = $baseUrl + $apiSuffix
-    $response = (curl -Uri $url -Headers $headers -Method Post).Content | ConvertFrom-Json
-
-    $status = $response.status
-
-    #TBD
+    $response = (Invoke-WebRequest -Uri $url -Headers $headers -Method Post -InFile $fileName -ContentType $contentType).Content
+    $response > "$($fileName).modelresponse.json"
+    $response = $response | ConvertFrom-Json
+    $response
 }
+
+function ExtractDataFromModel ($jsonObject)
+{
+    #this function expects the json object to follow the Forms Recognizer schema    
+
+    #The model number is the next text detected after the keyword M/N
+    foreach ($item in $jsonObject.pages[0].keyvaluepairs) 
+    {
+        if ($item.key.text -eq "M/N:") 
+        {
+            $modelNumber = $item.value.text
+            break
+        }
+    }
+
+    #The serial number is the next text detected after the keyword S/N
+    foreach ($item in $jsonObject.pages[0].keyvaluepairs) 
+    {
+        if ($item.key.text -eq "S/N:") 
+        {
+            $serialNumber = $item.value.text
+            break
+        }
+    }
+   
+    New-Object -TypeName PSCustomObject -Property @{        
+        modelNumber = $modelNumber;
+        serialNumber = $serialNumber;
+    }
+}
+
+function GetModelKeys ($modelId)
+{
+    $ApiSuffix = "formrecognizer/v1.0-preview/custom/models/$modelId/keys"
+    #web request parameters
+    $headers = @{   "Ocp-Apim-Subscription-Key"="$subscriptionKey"
+    }
+    $url = $baseUrl + $apiSuffix
+    $response = (Invoke-WebRequest -Uri $url -Headers $headers -Method Get).Content    
+    $response
+}
+
 #cognitive services info
-$subscriptionKey = "<enter sub key>"
-$baseUrl = "https://southcentralus.api.cognitive.microsoft.com/"
+$subscriptionKey = "325c43ac82164028a440ed12e7ecdd96"
+$baseUrl = "https://westus2.api.cognitive.microsoft.com/"
 
 #storage account info. Storage that contains the images to be analyzed
 $storageAccountName = "cbreimgrepo"
 $sasToken = "sv=2018-03-28&ss=bfqt&srt=sco&sp=rwdlacup&st=2019-06-21T19%3A48%3A13Z&se=2019-08-22T19%3A48%3A00Z&sig=Do8Kk8JTOmn3oSc3ykodz6gNpZQo9T3e3QHAIro9IEg%3D"
 $sasQueryString = "?$sasToken"
-$blobContainerUrl = "https://cbreimgrepo.blob.core.windows.net/imgs/"
+$blobContainerUrl = "https://cbreimgrepo.blob.core.windows.net/imgs/" + $sasQueryString
 
 #loop thru all folders and analyze all images
 $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -SasToken $sasToken
-$outputTableName = "ocrresult"
+#$outputTableName = "ocrresult"
 #$outputTable = (Get-AzStorageTable -Name $outputTableName -Context $storageContext).CloudTable
 
-"" > "D:\work\cbre\ai\ocr\summary.txt"
+#Clean up model if needed
+CleanupModels
 
-foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-trane") 
-{    
-    $blobFullUrl = $blobContainerUrl + $blob.Name + $sasQueryString
-    $body = "{""url"":""$blobFullUrl""}"
-    $url = $baseUrl + $apiSuffix + $apiOptions
- 
-    $responseRaw = (curl -Uri $url -Headers $headers -Body $body -Method Post).Content
-    $response = $responseRaw | ConvertFrom-Json
+#Train model with 17 images
+$modelIdLennox = TrainModel $blobContainerUrl "nameplate-lennox"
+#$modelIdLennox = "6b2ccb3a-8470-487d-8c5c-b28f006a199e"
 
-    #this one below needs module AzTable to be installed
-    $rowKey = $blob.Name.Replace("/","-")
-    $prop = @{"json"=$response}
-    #Add-AzTableRow -Table $outputTable -PartitionKey "ptkey1" -RowKey $rowKey -property $prop -UpdateExisting
+GetModelKeys $modelIdLennox
 
-    #extract manufacturer, serial number and model number
+#test model
+#$modelIdLennox = "b7322cf3-f81d-45ab-9a76-c2f97d40d095"
+#$result = AnalyzeForm $modelIdLennox "D:\Work\CBRE\AI\testimgs\nameplate-lennox\100_5613__04117_1532201503_1280_1280.jpg" "image/jpeg"
+#ExtractDataFromModel $result
 
-    $data = ExtractData($response)
-
-    $msg = "Detected: MN=$($data.ModelNumber); SN=$($data.SerialNumber); CO=$($data.Manufacturer) for $rowkey"
-    Write-Output $msg
-    $msg >> "D:\work\cbre\ai\ocr\summary_all.txt"
-
-    #also write to file
-    $responseRaw > "D:\work\cbre\ai\ocr\results\$($rowKey).json"
-} 
 
