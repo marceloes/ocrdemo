@@ -35,27 +35,56 @@ function ExtractData ($jsonObject)
     $foundSerial = $false
     for ($i = 0; ($i -lt $array.Count) -and !($foundModel -and $foundSerial); $i++) 
     {       
-        if ($array[$i].text -like "*M?N*") 
+        switch ($array[$i].text) 
         {
-            if ($array[$i].text.length -gt 6)
+            {$_ -match "M[I\/]?N"}   {$foundModel = $true; $text = ($_ -replace "M[I\/]?N","") -replace "\:",""; break }
+            {$_ -match "UNIT MODEL"} {$foundModel = $true; $text = ($_ -replace "UNIT MODEL","") -replace "\:",""; $regExtToUse = "[A-Z0-9]{8}-[A-Z]{3}";break }
+            Default {continue}
+        }
+        if ($foundModel) 
+        {
+                #remove original ocurrence
+            if ($text.length -gt 6)
             {
-                $modelNumber = $array[$i].text                
+                $modelNumber = $text                
             }
             else 
             {
-                $modelNumber = $array[$i+1].text
+                if ($array[$i+1].text.length -gt 8)
+                {
+                    $modelNumber = $array[$i+1].text
+                }
+                else 
+                {
+                    $modelNumber = $array[$i-1].text
+                }
             }           
             $foundModel = $true
         }
-        if ($array[$i].text -like "*S?N*") 
+
+        switch ($array[$i].text) 
         {
-            if ($array[$i].text.length -gt 6)
+            {$_ -match "S[I\/]?N"}   {$foundModel = $true; $text = ($_ -replace "S[I\/]?N","") -replace "\:","";  break }
+            {$_ -match "SERIAL NO"} {$foundModel = $true; $text = ($_ -replace "SERIAL NO","") -replace "\.",""; $regExtToUse = "[A-Z0-9]{10}"; break }
+            Default {continue}
+        }
+
+        if ($foundSerial) 
+        {
+            if ($text -gt 7)
             {
-                $serialNumber = $array[$i].text
+                $serialNumber = $text
             }
             else 
             {
-                $serialNumber = $array[$i+1].text
+                if ($array[$i+1].text.length -gt 8)
+                {
+                    $serialNumber = $array[$i+1].text
+                }
+                else 
+                {
+                    $serialNumber = $array[$i-1].text
+                }
             }          
             $foundSerial = $true 
         }
@@ -69,11 +98,11 @@ function ExtractData ($jsonObject)
 }
 
       #extract manufacturer, serial number and model number
-    foreach ($item in (Get-ChildItem -Path "C:\work\cbre\results")) 
+    foreach ($item in (Get-ChildItem -Path "D:\work\cbre\ai\testec-results")) 
     {
         $analysisResult = Get-Content $item.FullName | ConvertFrom-Json
         $data = ExtractData $analysisResult
-        $data
+        Write-output "File : $($item.Name) - Data extracted: Manufacturer = $($data.manufacturer); Model = $($data.modelNumber); Serial = $($data.serialNumber)" 
     }
 #    $data = ExtractData($response)
 

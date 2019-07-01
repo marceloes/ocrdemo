@@ -84,12 +84,13 @@ $headers = @{   "Ocp-Apim-Subscription-Key"="$subscriptionKey";
 
 #loop thru all folders and analyze all images
 $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -SasToken $sasToken
-$outputTableName = "ocrresult"
+#$outputTableName = "ocrresult"
 #$outputTable = (Get-AzStorageTable -Name $outputTableName -Context $storageContext).CloudTable
 
 #"" > "D:\work\cbre\ai\ocr\summary.txt"
+$manInput = "other"
 
-foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-other") 
+foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-$manInput") 
 {
     Write-Output "Analyzing $($blob.Name) ..."    
     
@@ -110,6 +111,6 @@ foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -
     #$msg >> "D:\work\cbre\ai\ocr\summary_all.txt"
 
     #also write to file
-    $responseRaw > "D:\work\cbre\ai\ocr\results\$($rowKey).json"
+    $responseRaw > "D:\work\cbre\ai\test-ocr-results\$manInput\$($rowKey).json"
 } 
 

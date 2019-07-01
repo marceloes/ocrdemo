@@ -71,7 +71,7 @@ function GetRecognizeTextOperationResult ($operationLocation)
 {
     do 
     {
-        Start-Sleep -Seconds 3
+        Start-Sleep -Seconds 5
         $headers = @{   "Ocp-Apim-Subscription-Key"="$subscriptionKey"                        
         }
         $responseRaw = (Invoke-WebRequest -Uri $operationLocation -Headers $headers -Method Get).Content
@@ -109,7 +109,9 @@ $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -
 #$summaryFile = "C:\work\cbre\textapi_summary.txt"
 #"" > $summaryFile
 
- foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-york") 
+$resultsPath = "D:\Work\CBRE\AI\testec-results\trane"
+
+ foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-trane") 
  {    
      $blobFullUrl = $blobContainerUrl + $blob.Name + $sasQueryString     
      $blobName = $blob.Name.Replace("/","-")
@@ -120,7 +122,7 @@ $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -
 
      $response = GetRecognizeTextOperationResult $operationLocation          
      
-     $response >> "C:\work\cbre\results\$($blobName).json"
+     $response >> "$resultsPath\$($blobName).json"
      $response = $response | ConvertFrom-Json
 
      Write-Output "Analysis complete for $blobName"
