@@ -1,3 +1,234 @@
+function ExtractManufacturer($array)
+{
+    $list = @("LENNOX","YORK","TRANE","ENGA","SDMO","ONON","CLEAVER","NRTL","MARATHON","GSW","MITSUBISHI","CARRIER","MCQUAY","WALCHEM","KOHLER","SIEMENS")
+    foreach ($item in $list) 
+    {
+        if (($array.text -match $item).length -gt 0)
+        {
+            return $item
+        }            
+    }
+    #take a guess using the first recognized text item
+    return $array[0].text
+}
+
+function ExtractAnyManufacturerData ($array, $regEx, $cleanupRegexArray)
+{
+    $found = $false
+    for ($i = 0; ($i -lt $array.Count) -and !($found); $i++) 
+    {
+        if ($array[$i].text -match $regEx -and ! $found)       
+        {
+            $found = $true
+            $text = ($array[$i].text -replace $regEx,"").Trim()
+            foreach ($regExItem in $cleanupRegexArray) 
+            {
+                $text = ($text -replace $regExItem,"").Trim()
+            }
+
+            #remove original ocurrence
+            if ($text.length -gt 6)
+            {
+                return $text
+            }
+            else 
+            {
+                if ($array[$i+1].text.length -gt 8)
+                {
+                    return $array[$i+1].text
+                }
+                else 
+                {
+                    return $array[$i-1].text
+                }
+            }           
+            $found = $true
+        } 
+    }  
+}
+
+# function ExtractLennoxData ($array)
+# {
+#     $foundModel = $false
+#     $foundSerial = $false
+#     for ($i = 0; ($i -lt $array.Count) -and !($foundModel -and $foundSerial); $i++) 
+#     {
+#         if ($array[$i].text -match "M[I\/]?N" -and ! $foundModel)       
+#         {
+#             $foundModel = $true
+#             $text = (($array[$i].text -replace "M[I\/]?N","") -replace "\:","").Trim()
+
+#             #remove original ocurrence
+#             if ($text.length -gt 6)
+#             {
+#                 $modelNumber = $text                
+#             }
+#             else 
+#             {
+#                 if ($array[$i+1].text.length -gt 8)
+#                 {
+#                     $modelNumber = $array[$i+1].text
+#                 }
+#                 else 
+#                 {
+#                     $modelNumber = $array[$i-1].text
+#                 }
+#             }           
+#             $foundModel = $true
+#         }
+
+#         if ($array[$i].text -match "S[I\/]?N" -and ! $foundSerial)
+#         {
+#             $foundSerial = $true
+#             $text = (($array[$i].text -replace "S[I\/]?N","") -replace "\:","").Trim()
+
+#             if ($text.length -gt 7)
+#             {
+#                 $serialNumber = $text
+#             }
+#             else 
+#             {
+#                 if ($array[$i+1].text.length -gt 8)
+#                 {
+#                     $serialNumber = $array[$i+1].text
+#                 }
+#                 else 
+#                 {
+#                     $serialNumber = $array[$i-1].text
+#                 }
+#             }          
+#             $foundSerial = $true 
+#         }
+#     }
+   
+#     New-Object -TypeName PSCustomObject -Property @{
+#         manufacturer = $manufacturer;
+#         modelNumber = $modelNumber;
+#         serialNumber = $serialNumber;
+#     }
+# }
+
+# function ExtractTraneData ($array)
+# {
+#     $foundModel = $false
+#     $foundSerial = $false
+#     for ($i = 0; ($i -lt $array.Count) -and !($foundModel -and $foundSerial); $i++) 
+#     {
+#         if ($array[$i].text -match "MOD\.|MODEL NO\." -and ! $foundModel)
+#         {
+#             $foundModel = $true
+#             $text = ($array[$i].text -replace "MOD\. NO\.|MODEL NO\.","" -replace "VOLTS","" -replace "[0-9]{3}\/[0-9]{3}","").Trim()
+
+#             #remove original ocurrence
+#             if ($text.length -gt 6)
+#             {
+#                 $modelNumber = $text                
+#             }
+#             else 
+#             {
+#                 if ($array[$i+1].text.length -gt 8)
+#                 {
+#                     $modelNumber = $array[$i+1].text
+#                 }
+#                 else 
+#                 {
+#                     $modelNumber = $array[$i-1].text
+#                 }
+#             }           
+#             $foundModel = $true
+#         }
+
+#         if ($array[$i].text -match "SERIAL NO\." -and ! $foundSerial)
+#         {
+#             $foundSerial = $true
+#             $text = ($array[$i].text -replace "SERIAL NO\.","" ).Trim()
+
+#             if ($text.length -gt 7)
+#             {
+#                 $serialNumber = $text
+#             }
+#             else 
+#             {
+#                 if ($array[$i+1].text.length -gt 8)
+#                 {
+#                     $serialNumber = $array[$i+1].text
+#                 }
+#                 else 
+#                 {
+#                     $serialNumber = $array[$i-1].text
+#                 }
+#             }          
+#             $foundSerial = $true 
+#         }
+#     }
+   
+#     New-Object -TypeName PSCustomObject -Property @{
+#         manufacturer = $manufacturer;
+#         modelNumber = $modelNumber;
+#         serialNumber = $serialNumber;
+#     }
+# }
+# function ExtractYorkData ($array)
+# {
+#     $foundModel = $false
+#     $foundSerial = $false
+#     for ($i = 0; ($i -lt $array.Count) -and !($foundModel -and $foundSerial); $i++) 
+#     {
+#         if ($array[$i].text -match "UNIT MODEL" -and ! $foundModel)
+#         {
+#             $foundModel = $true
+#             $text = ($array[$i].text -replace "UNIT MODEL","" ).Trim()
+
+#             #remove original ocurrence
+#             if ($text.length -gt 6)
+#             {
+#                 $modelNumber = $text                
+#             }
+#             else 
+#             {
+#                 if ($array[$i+1].text.length -gt 8)
+#                 {
+#                     $modelNumber = $array[$i+1].text
+#                 }
+#                 else 
+#                 {
+#                     $modelNumber = $array[$i-1].text
+#                 }
+#             }           
+#             $foundModel = $true
+#         }
+
+#         if ($array[$i].text -match "SERIAL NO\." -and ! $foundSerial)
+#         {
+#             $foundSerial = $true
+#             $text = ($array[$i].text -replace "SERIAL NO\.","" ).Trim()
+
+#             if ($text.length -gt 7)
+#             {
+#                 $serialNumber = $text
+#             }
+#             else 
+#             {
+#                 if ($array[$i+1].text.length -gt 8)
+#                 {
+#                     $serialNumber = $array[$i+1].text
+#                 }
+#                 else 
+#                 {
+#                     $serialNumber = $array[$i-1].text
+#                 }
+#             }          
+#             $foundSerial = $true 
+#         }
+#     }
+   
+#     New-Object -TypeName PSCustomObject -Property @{
+#         manufacturer = $manufacturer;
+#         modelNumber = $modelNumber;
+#         serialNumber = $serialNumber;
+#     }
+# }
+
 function ExtractData ($jsonObject)
 {
     #this function expects the json object to follow the OCR schema
@@ -22,74 +253,37 @@ function ExtractData ($jsonObject)
     $array = $array | Sort-Object y,x
     
     #usually the first text detected is the manufacturer
-    $manufacturer = $jsonObject.recognitionResult.lines[0].text
+    $manufacturer = ExtractManufacturer $array
 
-    #usually the model number is the next text detected after the keyword MIN
-    #we'll search using the given order wich already is from top/left to bottom/right
+    # switch ($manufacturer)
+    # {
+    #     "LENNOX" {$data = ExtractLennoxData $array; break}
+    #     "TRANE"  {$data = ExtractTraneData $array; break}
+    #     "YORK"   {$data = ExtractYorkData $array; break}
+    #     Default  {$data = ExtractOtherData $array; break}
+    # }
 
-    #TODO:  add logic as follows
-    #       once found a string that matches M?N or MOD?? (same for serial)
-    #       look for the number on the nearest box, so calculating relative distance to the current box is needed.
+    switch ($manufacturer)
+    {
+        "LENNOX" {
+                    $modelNumber = ExtractAnyManufacturerData $array "M[I\/]?N" @("\:")  
+                    $serialNumber = ExtractAnyManufacturerData $array "S[I\/]?N" @("\:") 
+                    break
+                 }
+        "TRANE"  {
+                    $modelNumber = ExtractAnyManufacturerData $array "MOD\.|MODEL NO\." @("VOLTS","[0-9]{3}\/[0-9]{3}")  
+                    $serialNumber = ExtractAnyManufacturerData $array "SERIAL NO\." @() 
+                    break
+                 }
+        "YORK"   {
+                    $modelNumber = ExtractAnyManufacturerData $array "UNIT MODEL" @()  
+                    $serialNumber = ExtractAnyManufacturerData $array "SERIAL NO\." @() 
+                    break
+                 }
 
-    $foundModel = $false
-    $foundSerial = $false
-    for ($i = 0; ($i -lt $array.Count) -and !($foundModel -and $foundSerial); $i++) 
-    {       
-        switch ($array[$i].text) 
-        {
-            {$_ -match "M[I\/]?N"}   {$foundModel = $true; $text = ($_ -replace "M[I\/]?N","") -replace "\:",""; break }
-            {$_ -match "UNIT MODEL"} {$foundModel = $true; $text = ($_ -replace "UNIT MODEL","") -replace "\:",""; $regExtToUse = "[A-Z0-9]{8}-[A-Z]{3}";break }
-            Default {continue}
-        }
-        if ($foundModel) 
-        {
-                #remove original ocurrence
-            if ($text.length -gt 6)
-            {
-                $modelNumber = $text                
-            }
-            else 
-            {
-                if ($array[$i+1].text.length -gt 8)
-                {
-                    $modelNumber = $array[$i+1].text
-                }
-                else 
-                {
-                    $modelNumber = $array[$i-1].text
-                }
-            }           
-            $foundModel = $true
-        }
-
-        switch ($array[$i].text) 
-        {
-            {$_ -match "S[I\/]?N"}   {$foundModel = $true; $text = ($_ -replace "S[I\/]?N","") -replace "\:","";  break }
-            {$_ -match "SERIAL NO"} {$foundModel = $true; $text = ($_ -replace "SERIAL NO","") -replace "\.",""; $regExtToUse = "[A-Z0-9]{10}"; break }
-            Default {continue}
-        }
-
-        if ($foundSerial) 
-        {
-            if ($text -gt 7)
-            {
-                $serialNumber = $text
-            }
-            else 
-            {
-                if ($array[$i+1].text.length -gt 8)
-                {
-                    $serialNumber = $array[$i+1].text
-                }
-                else 
-                {
-                    $serialNumber = $array[$i-1].text
-                }
-            }          
-            $foundSerial = $true 
-        }
+        Default  {$data = ExtractOtherData $array; break}
     }
-   
+
     New-Object -TypeName PSCustomObject -Property @{
         manufacturer = $manufacturer;
         modelNumber = $modelNumber;
@@ -98,11 +292,11 @@ function ExtractData ($jsonObject)
 }
 
       #extract manufacturer, serial number and model number
-    foreach ($item in (Get-ChildItem -Path "D:\work\cbre\ai\testec-results")) 
+    foreach ($file in (Get-ChildItem -Path "D:\work\cbre\ai\test-recog-results\york")) 
     {
-        $analysisResult = Get-Content $item.FullName | ConvertFrom-Json
+        $analysisResult = Get-Content $file.FullName | ConvertFrom-Json
         $data = ExtractData $analysisResult
-        Write-output "File : $($item.Name) - Data extracted: Manufacturer = $($data.manufacturer); Model = $($data.modelNumber); Serial = $($data.serialNumber)" 
+        Write-output "File : $($file.Name) - Data extracted: Manufacturer = $($data.manufacturer); Model = $($data.modelNumber); Serial = $($data.serialNumber)" 
     }
 #    $data = ExtractData($response)
 
