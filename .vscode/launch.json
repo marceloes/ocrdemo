@@ -47,6 +47,14 @@
             "type": "PowerShell",
             "request": "attach",
             "processId": "current"
+        },
+        {
+            "name": "Attach to PowerShell Functions",
+            "type": "PowerShell",
+            "request": "attach",
+            "customPipeName": "AzureFunctionsPSWorker",
+            "runspaceId": 1,
+            "preLaunchTask": "func: host start"
         }
     ]
 }

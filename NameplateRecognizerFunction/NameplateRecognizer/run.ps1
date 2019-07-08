@@ -1,3 +1,8 @@
+using namespace System.Net
+
+# Input bindings are passed in via param block.
+param($Request, $TriggerMetadata)
+
 function ExtractManufacturer($array)
 {
     $list = @("LENNOX","YORK","TRANE","ENGA","SDMO","ONON","CLEAVER","NRTL","MARATHON","GSW","MITSUBISHI","CARRIER","MCQUAY","WALCHEM","KOHLER","SIEMENS")
@@ -153,40 +158,45 @@ function GetRecognizeTextOperationResult ($operationLocation)
 }
 
 #cognitive services info
-$subscriptionKey = "13513c354a7740d3ad5c3f29f6c12f00"
-$baseUrl = "https://southcentralus.api.cognitive.microsoft.com/"
+#$subscriptionKey = "13513c354a7740d3ad5c3f29f6c12f00"
+$subscriptionKey = $env:COGNITIVE_SERVICES_SUBSCRIPTION_KEY
 
-#storage account info. Storage that contains the images to be analyzed
-$storageAccountName = "cbreimgrepo"
-$sasToken = "sv=2018-03-28&ss=bfqt&srt=sco&sp=rwdlacup&st=2019-06-21T19%3A48%3A13Z&se=2019-08-22T19%3A48%3A00Z&sig=Do8Kk8JTOmn3oSc3ykodz6gNpZQo9T3e3QHAIro9IEg%3D"
-$sasQueryString = "?$sasToken"
-$blobContainerUrl = "https://cbreimgrepo.blob.core.windows.net/imgs/"
-#$blobName = "3a27326a3678439b9a92712438efefb2.jpg"
-#$blobFullUrl = $blobContainerUrl + $blobName + $sasQueryString
+#$baseUrl = "https://southcentralus.api.cognitive.microsoft.com/"
+$baseUrl = $env:COGNITIVE_SERVICES_BASE_URL
 
-#loop thru all folders and analyze all images
-$storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -SasToken $sasToken
+# Interact with query parameters or the body of the request.
+$blobFullUrl = $Request.Query.imageUrl
+ if (-not $blobFullUrl) 
+ {
+     $blobFullUrl = $Request.Body.imageUrl
+ }
 
+if ($blobFullUrl) 
+{
+    try 
+    {
+        $operationLocation = RecognizeText $baseUrl $blobFullUrl
+        $operationResult = GetRecognizeTextOperationResult $operationLocation | ConvertFrom-Json            
+        $status = [HttpStatusCode]::OK
+        $body = $operationResult
+    }
+    catch 
+    {
+        $status = [HttpStatusCode]::BadRequest
+        $body = $_
+    }
+    finally 
+    {        
+    }
+}
+else 
+{
+    $status = [HttpStatusCode]::BadRequest
+    $body = "Please pass a valid URL (imageUrl) on the query String or body."
+}
 
- foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-other") 
- {    
-     $blobFullUrl = $blobContainerUrl + $blob.Name + $sasQueryString     
-     $blobName = $blob.Name.Replace("/","-")
- 
-     #Write-Output "Analyzing img $blobName ..."
-
-     $operationLocation = RecognizeText $baseUrl $blobFullUrl
-
-     $response = GetRecognizeTextOperationResult $operationLocation          
-     #$response
-     $response = $response | ConvertFrom-Json    
-
-     $data = ExtractData $response
-     Write-host -ForegroundColor Green "File : $($blobName) - Data extracted: Manufacturer = $($data.manufacturer); Model = $($data.modelNumber); Serial = $($data.serialNumber)" 
-
-     #$response >> "$resultsPath\$($blobName).json"
-     #$response = $response | ConvertFrom-Json
-
-     #Write-Output "Analysis complete for $blobName"
- } 
-
+# Associate values to output bindings by calling 'Push-OutputBinding'.
+Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+    StatusCode = $status
+    Body = $body
+})
