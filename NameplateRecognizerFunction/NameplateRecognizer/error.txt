@@ -221,7 +221,7 @@
       "IsSecurityTransparent": false,
       "MethodHandle": {
         "Value": {
-          "value": 117610072
+          "value": 94344792
         }
       },
       "Attributes": 486,
@@ -402,7 +402,7 @@
     "Category": 7,
     "Activity": "Invoke-WebRequest",
     "Reason": "HttpResponseException",
-    "TargetName": "Method: POST, RequestUri: 'https://southcentralus.api.cognitive.microsoft.com/vision/v2.0/recognizeText?mode=Printed', Version: 2.0, Content: System.Net.Http.ByteArrayContent, Headers:\r\n{\r\n  Ocp-Apim-Subscription-Key: 13513c354a7740d3ad5c3f29f6c12f00\r\n  User-Agent: Mozilla/5.0\r\n  User-Agent: (Windows NT 10.0; Microsoft Windows 10.0.14393; en-US)\r\n  User-Agent: PowerShell/6.2.0\r\n  Content-Length: 227\r\n  Content-Type: application/json\r\n}",
+    "TargetName": "Method: POST, RequestUri: 'https://southcentralus.api.cognitive.microsoft.com/vision/v2.0/recognizeText?mode=Printed', Version: 2.0, Content: System.Net.Http.ByteArrayContent, Headers:\r\n{\r\n  Ocp-Apim-Subscription-Key: 13513c354a7740d3ad5c3f29f6c12f00\r\n  User-Agent: Mozilla/5.0\r\n  User-Agent: (Windows NT 10.0; Microsoft Windows 10.0.14393; en-US)\r\n  User-Agent: PowerShell/6.2.0\r\n  Content-Length: 124\r\n  Content-Type: application/json\r\n}",
     "TargetType": "HttpRequestMessage"
   },
   "FullyQualifiedErrorId": "WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeWebRequestCommand",
@@ -517,7 +517,7 @@
         "TypeInitializer": null,
         "IsSerializable": false,
         "IsVisible": true,
-        "CustomAttributes": "[System.Management.Automation.CmdletAttribute(\"Invoke\", \"WebRequest\", DefaultParameterSetName = \"StandardMethod\", HelpUri = \"https://go.microsoft.com/fwlink/?LinkID=217035\")]"
+        "CustomAttributes": "[System.Management.Automation.CmdletAttribute(\"Invoke\", \"WebRequest\", HelpUri = \"https://go.microsoft.com/fwlink/?LinkID=217035\", DefaultParameterSetName = \"StandardMethod\")]"
       },
       "Definition": "\r\nInvoke-WebRequest [-Uri] <uri> [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Method <WebRequestMethod>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-ProxyUseDefaultCredentials] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>]\r\n\r\nInvoke-WebRequest [-Uri] <uri> -NoProxy [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Method <WebRequestMethod>] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>]\r\n\r\nInvoke-WebRequest [-Uri] <uri> -CustomMethod <string> [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Proxy <uri>] [-ProxyCredential <pscredential>] [-ProxyUseDefaultCredentials] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>]\r\n\r\nInvoke-WebRequest [-Uri] <uri> -CustomMethod <string> -NoProxy [-UseBasicParsing] [-WebSession <WebRequestSession>] [-SessionVariable <string>] [-AllowUnencryptedAuthentication] [-Authentication <WebAuthenticationType>] [-Credential <pscredential>] [-UseDefaultCredentials] [-CertificateThumbprint <string>] [-Certificate <X509Certificate>] [-SkipCertificateCheck] [-SslProtocol <WebSslProtocol>] [-Token <securestring>] [-UserAgent <string>] [-DisableKeepAlive] [-TimeoutSec <int>] [-Headers <IDictionary>] [-MaximumRedirection <int>] [-MaximumRetryCount <int>] [-RetryIntervalSec <int>] [-Body <Object>] [-Form <IDictionary>] [-ContentType <string>] [-TransferEncoding <string>] [-InFile <string>] [-OutFile <string>] [-PassThru] [-Resume] [-PreserveAuthorizationOnRedirect] [-SkipHeaderValidation] [<CommonParameters>]\r\n",
       "DefaultParameterSet": "StandardMethod",
@@ -603,4 +603,5 @@
     "CommandOrigin": 1,
     "DisplayScriptPosition": null
   },
-  "ScriptStackTrace
+  "ScriptStackTrace": "at RecognizeText, D:\\home\\site\\wwwroot\\NameplateRecognizer\\run.ps1: line 134\r\nat <ScriptBlock>, D:\\home\\site\\wwwroot\\NameplateRecognizer\\run.ps1: line 178",
+  "PipelineIterationInfo": []

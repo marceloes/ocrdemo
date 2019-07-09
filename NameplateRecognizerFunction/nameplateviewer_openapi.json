@@ -1,0 +1,50 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "NamePlateViewer",
+    "version": "1.0",
+    "description": "Import from \"NamePlateViewer\" Function App"
+  },
+  "host": "nameplateviewer-apim.azure-api.net",
+  "basePath": "/NamePlateViewer",
+  "schemes": [
+    "https"
+  ],
+  "securityDefinitions": {
+    "apiKeyHeader": {
+      "type": "apiKey",
+      "name": "Ocp-Apim-Subscription-Key",
+      "in": "header"
+    },
+    "apiKeyQuery": {
+      "type": "apiKey",
+      "name": "subscription-key",
+      "in": "query"
+    }
+  },
+  "security": [
+    {
+      "apiKeyHeader": []
+    },
+    {
+      "apiKeyQuery": []
+    }
+  ],
+  "paths": {
+    "/NameplateRecognizer": {
+      "post": {
+        "operationId": "post-nameplaterecognizer",
+        "summary": "NameplateRecognizer",
+        "responses": {
+            
+        }
+      },
+      "get": {
+        "operationId": "get-nameplaterecognizer",
+        "summary": "NameplateRecognizer",
+        "responses": {}
+      }
+    }
+  },
+  "tags": []
+}

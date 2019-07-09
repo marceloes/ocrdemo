@@ -17,7 +17,7 @@ function ExtractManufacturer($array)
     return $array[0].text
 }
 
-function ExtractModelSerialData ($array, $regEx, $cleanupRegexArray)
+function ExtractModelSerial ($array, $regEx, $cleanupRegexArray)
 {
     $found = $false
     $responses = @()
@@ -86,8 +86,8 @@ function ExtractData ($jsonObject)
                     break
                  }
         "TRANE"  {
-                    $modelNumber = ExtractModelSerial $array "MOD\.|MODEL" @("VOLTS","[0-9]{3}\/[0-9]{3}","UNIT","NUMBER")  
-                    $serialNumber = ExtractModelSerial $array "SERIAL" @("UNIT","NUMBER") 
+                    $modelNumber = ExtractModelSerial $array "MOD\.|MODEL" @("VOLTS","[0-9]{3}\/[0-9]{3}","UNIT","NUMBER","NO.")  
+                    $serialNumber = ExtractModelSerial $array "SERIAL" @("UNIT","NUMBER", "NO\.") 
                     break
                  }
         "YORK"   {
@@ -147,14 +147,7 @@ function GetRecognizeTextOperationResult ($operationLocation)
         $response = $responseRaw | ConvertFrom-Json        
     } while ($response.status -in ("Running", "NotStarted"))
 
-    if ($response.status -eq "Succeeded") 
-    {
-        return $responseRaw
-    }
-    else 
-    {
-        return $null
-    }
+    return $responseRaw
 }
 
 #cognitive services info
@@ -165,7 +158,11 @@ $subscriptionKey = $env:COGNITIVE_SERVICES_SUBSCRIPTION_KEY
 $baseUrl = $env:COGNITIVE_SERVICES_BASE_URL
 
 # Interact with query parameters or the body of the request.
+Write-Host "Base request object: $Request"
 $blobFullUrl = $Request.Query.imageUrl
+Write-Host "Query object: $($Request.Query)"
+Write-Host "Body object: $($Request.Body)"
+
 if (-not $blobFullUrl) 
 {
     $blobFullUrl = $Request.Body.imageUrl
@@ -175,10 +172,25 @@ if ($blobFullUrl)
 {
     try 
     {
+        Write-Host "Blob image url = $blobFullUrl"
         $operationLocation = RecognizeText $baseUrl $blobFullUrl
-        $operationResult = GetRecognizeTextOperationResult $operationLocation | ConvertFrom-Json            
-        $status = [HttpStatusCode]::OK
-        $body = $operationResult
+        $operationResult = GetRecognizeTextOperationResult $operationLocation | ConvertFrom-Json
+        Write-Host "Operation result raw: $operationResult"
+
+        if ($operationResult.status -eq "Succeeded")
+        {
+            $data = ExtractData $operationResult 
+            Write-Host "Response from API: $data"
+            $data = $data | ConvertTo-Json        
+            Write-Host "Response from API (JSON): $data"
+            $status = [HttpStatusCode]::OK
+            $body = $data     
+        }
+        else 
+        {
+            $status = [HttpStatusCode]::BadRequest
+            $body = "{""error"":""$($operationResult.status)""}"
+        }
     }
     catch 
     {

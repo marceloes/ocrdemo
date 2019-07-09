@@ -70,38 +70,38 @@ function ExtractData ($jsonObject)
     
     #usually the first text detected is the manufacturer
     $manufacturer = ExtractManufacturer $array
-    #$modelNumber = ExtractModelSerial $array "M[I\/]{1}N|MOD\. NO\.|UNIT MODEL|MODEL" @("\:","VOLTS","[0-9]{3}\/[0-9]{3}")  
-    #$serialNumber = ExtractModelSerial $array "S[I\/]{1}N|SERIAL NO\.|SERIAL" @("\:") 
+    $modelNumber = @()
+    $serialNumber = @()
 
     switch ($manufacturer)
     {
         "LENNOX" {
-                    $modelNumber = ExtractModelSerial $array "M[I\/]?N" @("\:")  
-                    $serialNumber = ExtractModelSerial $array "S[I\/]?N" @("\:") 
+                    $modelNumber += ExtractModelSerialData $array "M[I\/]?N" @("\:")  
+                    $serialNumber += ExtractModelSerialData $array "S[I\/]?N" @("\:") 
                     break
                  }
         "TRANE"  {
-                    $modelNumber = ExtractModelSerial $array "MOD\.|MODEL" @("VOLTS","[0-9]{3}\/[0-9]{3}","UNIT","NUMBER")  
-                    $serialNumber = ExtractModelSerial $array "SERIAL" @("UNIT","NUMBER") 
+                    $modelNumber += ExtractModelSerialData $array "MOD\.|MODEL" @("VOLTS","[0-9]{3}\/[0-9]{3}","UNIT","NUMBER")  
+                    $serialNumber += ExtractModelSerialData $array "SERIAL" @("UNIT","NUMBER") 
                     break
                  }
         "YORK"   {
-                    $modelNumber = ExtractModelSerial $array "UNIT MODEL" @()  
-                    $serialNumber = ExtractModelSerial $array "SERIAL NO\." @() 
+                    $modelNumber += ExtractModelSerialData $array "UNIT MODEL" @()  
+                    $serialNumber += ExtractModelSerialData $array "SERIAL NO\." @() 
                     break
                  }
         "ENGA"   {
-                    $modelNumber = ExtractModelSerial $array "MODELE" @()  
-                    $serialNumber = ExtractModelSerial $array "NUMERO DE SERIE" @() 
+                    $modelNumber += ExtractModelSerialData $array "MODELE" @()  
+                    $serialNumber += ExtractModelSerialData $array "NUMERO DE SERIE" @() 
                     break
                  }
         "GSW"   {
-                    $modelNumber = ExtractModelSerial $array "MODELE" @("MODEL")  
-                    $serialNumber = ExtractModelSerial $array "NO. DE SERIE" @("SERIAL") 
+                    $modelNumber += ExtractModelSerialData $array "MODELE" @("MODEL")  
+                    $serialNumber += ExtractModelSerialData $array "NO. DE SERIE" @("SERIAL") 
                     break
                  }
-        Default  {  $modelNumber = ExtractModelSerial $array "MODEL|TYPE" @()  
-                    $serialNumber = ExtractModelSerial $array "SERIAL|NUMERO SERIE" @() 
+        Default  {  $modelNumber += ExtractModelSerialData $array "MODEL|TYPE" @()  
+                    $serialNumber += ExtractModelSerialData $array "SERIAL|NUMERO SERIE" @() 
                     break
                  }
     }
@@ -139,7 +139,7 @@ function GetRecognizeTextOperationResult ($operationLocation)
         $headers = @{   "Ocp-Apim-Subscription-Key"="$subscriptionKey"                        
         }
         $responseRaw = (Invoke-WebRequest -Uri $operationLocation -Headers $headers -Method Get).Content
-        $response = $responseRaw | ConvertFrom-Json        
+        $response = ConvertFrom-Json $responseRaw
     } while ($response.status -in ("Running", "NotStarted"))
 
     if ($response.status -eq "Succeeded") 
@@ -168,7 +168,7 @@ $blobContainerUrl = "https://cbreimgrepo.blob.core.windows.net/imgs/"
 $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -SasToken $sasToken
 
 
- foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-other") 
+ foreach ($blob in Get-AzStorageBlob -Context $storageContext -Container "imgs" -Prefix "nameplate-trane") 
  {    
      $blobFullUrl = $blobContainerUrl + $blob.Name + $sasQueryString     
      $blobName = $blob.Name.Replace("/","-")
@@ -182,6 +182,8 @@ $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -
      $response = $response | ConvertFrom-Json    
 
      $data = ExtractData $response
+     ConvertTo-Json $data
+
      Write-host -ForegroundColor Green "File : $($blobName) - Data extracted: Manufacturer = $($data.manufacturer); Model = $($data.modelNumber); Serial = $($data.serialNumber)" 
 
      #$response >> "$resultsPath\$($blobName).json"
