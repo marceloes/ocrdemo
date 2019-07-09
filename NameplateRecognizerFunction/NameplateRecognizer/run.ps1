@@ -166,10 +166,10 @@ $baseUrl = $env:COGNITIVE_SERVICES_BASE_URL
 
 # Interact with query parameters or the body of the request.
 $blobFullUrl = $Request.Query.imageUrl
- if (-not $blobFullUrl) 
- {
-     $blobFullUrl = $Request.Body.imageUrl
- }
+if (-not $blobFullUrl) 
+{
+    $blobFullUrl = $Request.Body.imageUrl
+}
 
 if ($blobFullUrl) 
 {
