@@ -75,38 +75,38 @@ function ExtractData ($jsonObject)
     
     #usually the first text detected is the manufacturer
     $manufacturer = ExtractManufacturer $array
-    #$modelNumber = ExtractModelSerial $array "M[I\/]{1}N|MOD\. NO\.|UNIT MODEL|MODEL" @("\:","VOLTS","[0-9]{3}\/[0-9]{3}")  
-    #$serialNumber = ExtractModelSerial $array "S[I\/]{1}N|SERIAL NO\.|SERIAL" @("\:") 
+    $modelNumber = @()
+    $serialNumber = @()
 
     switch ($manufacturer)
     {
         "LENNOX" {
-                    $modelNumber = ExtractModelSerial $array "M[I\/]?N" @("\:")  
-                    $serialNumber = ExtractModelSerial $array "S[I\/]?N" @("\:") 
+                    $modelNumber += ExtractModelSerial $array "M[I\/]?N" @("\:")  
+                    $serialNumber += ExtractModelSerial $array "S[I\/]?N" @("\:") 
                     break
                  }
         "TRANE"  {
-                    $modelNumber = ExtractModelSerial $array "MOD\.|MODEL" @("VOLTS","[0-9]{3}\/[0-9]{3}","UNIT","NUMBER","NO.")  
-                    $serialNumber = ExtractModelSerial $array "SERIAL" @("UNIT","NUMBER", "NO\.") 
+                    $modelNumber += ExtractModelSerial $array "MOD\.|MODEL" @("VOLTS","[0-9]{3}\/[0-9]{3}","UNIT","NUMBER","NO.")  
+                    $serialNumber += ExtractModelSerial $array "SERIAL" @("UNIT","NUMBER", "NO\.") 
                     break
                  }
         "YORK"   {
-                    $modelNumber = ExtractModelSerial $array "UNIT MODEL" @()  
-                    $serialNumber = ExtractModelSerial $array "SERIAL NO\." @() 
+                    $modelNumber += ExtractModelSerial $array "UNIT MODEL" @()  
+                    $serialNumber += ExtractModelSerial $array "SERIAL NO\." @() 
                     break
                  }
         "ENGA"   {
-                    $modelNumber = ExtractModelSerial $array "MODELE" @()  
-                    $serialNumber = ExtractModelSerial $array "NUMERO DE SERIE" @() 
+                    $modelNumber += ExtractModelSerial $array "MODELE" @()  
+                    $serialNumber += ExtractModelSerial $array "NUMERO DE SERIE" @() 
                     break
                  }
         "GSW"   {
-                    $modelNumber = ExtractModelSerial $array "MODELE" @("MODEL")  
-                    $serialNumber = ExtractModelSerial $array "NO. DE SERIE" @("SERIAL") 
+                    $modelNumber += ExtractModelSerial $array "MODELE" @("MODEL")  
+                    $serialNumber += ExtractModelSerial $array "NO. DE SERIE" @("SERIAL") 
                     break
                  }
-        Default  {  $modelNumber = ExtractModelSerial $array "MODEL|TYPE" @()  
-                    $serialNumber = ExtractModelSerial $array "SERIAL|NUMERO SERIE" @() 
+        Default  {  $modelNumber += ExtractModelSerial $array "MODEL|TYPE" @()  
+                    $serialNumber += ExtractModelSerial $array "SERIAL|NUMERO SERIE" @() 
                     break
                  }
     }
@@ -144,7 +144,7 @@ function GetRecognizeTextOperationResult ($operationLocation)
         $headers = @{   "Ocp-Apim-Subscription-Key"="$subscriptionKey"                        
         }
         $responseRaw = (Invoke-WebRequest -Uri $operationLocation -Headers $headers -Method Get).Content
-        $response = $responseRaw | ConvertFrom-Json        
+        $response = ConvertFrom-Json $responseRaw     
     } while ($response.status -in ("Running", "NotStarted"))
 
     return $responseRaw
@@ -181,7 +181,7 @@ if ($blobFullUrl)
         {
             $data = ExtractData $operationResult 
             Write-Host "Response from API: $data"
-            $data = $data | ConvertTo-Json        
+            $data =ConvertTo-Json $data
             Write-Host "Response from API (JSON): $data"
             $status = [HttpStatusCode]::OK
             $body = $data     

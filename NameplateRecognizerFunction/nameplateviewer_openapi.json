@@ -36,13 +36,41 @@
         "operationId": "post-nameplaterecognizer",
         "summary": "NameplateRecognizer",
         "responses": {
-            
+          "200": {
+            "description": "analysis response",
+            "content": {
+              "*/*": {
+                "properties": {
+                  "manufacturer": {
+                      "$id": "#/properties/manufacturer",
+                      "type": "string",
+                      "title": "The Manufacturer Schema"
+                  },
+                  "modelNumber": {
+                      "$id": "#/properties/modelNumber",
+                      "type": "array",
+                      "title": "The Modelnumber Schema",
+                      "items": {
+                        "$id": "#/properties/modelNumber/items",
+                        "type": "string",
+                        "title": "The Items Schema"
+                      }
+                  },
+                  "serialNumber": {
+                      "$id": "#/properties/serialNumber",
+                      "type": "array",
+                      "title": "The Serialnumber Schema",
+                      "items": {
+                        "$id": "#/properties/serialNumber/items",
+                        "type": "string",
+                        "title": "The Items Schema"
+                      }
+                  }
+                }
+              }
+            }
+          }
         }
-      },
-      "get": {
-        "operationId": "get-nameplaterecognizer",
-        "summary": "NameplateRecognizer",
-        "responses": {}
       }
     }
   },
