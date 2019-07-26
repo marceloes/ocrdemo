@@ -105,7 +105,7 @@ function ExtractData ($jsonObject)
                     $serialNumber += ExtractModelSerial $array "NO. DE SERIE" @("SERIAL") 
                     break
                  }
-        Default  {  $modelNumber += ExtractModelSerial $array "MODEL|TYPE" @()  
+        Default  {  $modelNumber += ExtractModelSerial $array "MODEL|MOD\.|TYPE" @()  
                     $serialNumber += ExtractModelSerial $array "SERIAL|NUMERO SERIE" @() 
                     break
                  }
