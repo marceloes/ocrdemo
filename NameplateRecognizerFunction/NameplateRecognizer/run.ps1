@@ -1,3 +1,13 @@
+<# 
+DISCLAIMER: 
+------------------------------------------------------------------- 
+This sample is provided as is and is not meant for use on a production environment. 
+It is provided only for illustrative purposes. The end user must test and modify the sample to suit their target environment. 
+Microsoft can make no representation concerning the content of this sample. 
+Microsoft is providing this information only as a convenience to you. 
+This is to inform you that Microsoft has not tested the sample and therefore cannot make any representations regarding the quality, safety, or suitability of any code or information found here.    
+#>
+
 using namespace System.Net
 
 # Input bindings are passed in via param block.
@@ -151,10 +161,8 @@ function GetRecognizeTextOperationResult ($operationLocation)
 }
 
 #cognitive services info
-#$subscriptionKey = "13513c354a7740d3ad5c3f29f6c12f00"
 $subscriptionKey = $env:COGNITIVE_SERVICES_SUBSCRIPTION_KEY
 
-#$baseUrl = "https://southcentralus.api.cognitive.microsoft.com/"
 $baseUrl = $env:COGNITIVE_SERVICES_BASE_URL
 
 # Interact with query parameters or the body of the request.
