@@ -52,3 +52,5 @@ az functionapp config appsettings set --settings "COGNITIVE_SERVICES_BASE_URL=$c
 
 Pop-Location
 
+#get function URL so the Flow can be updated to call it
+func azure functionapp list-functions $functionAppName --show-keys
