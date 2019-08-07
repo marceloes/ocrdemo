@@ -1,10 +1,10 @@
-#param($rg, $location)
-$rg = "cbreai-test-rg"
-$location = "canadacentral"
-$subscription = "MS - Microsoft Azure Internal Consumption"
-$cogSvcName = "cbrecogtst1"
-$storageAcctName = "cbrefunctstoragetst1"
-$functionAppName = "nameplaterecognizerfunctionapp"
+param($rg, $location, $subscription, $cogSvcName, $storageAcctName, $functionAppName)
+#$rg = "__resource_group__"
+#$location = "canadacentral"
+#$subscription = "MS - Microsoft Azure Internal Consumption"
+#$cogSvcName = "cbrecogtst1"
+#$storageAcctName = "cbrefunctstoragetst1"
+#$functionAppName = "nameplaterecognizerfunctionapp"
 
 #Connect to Azure and proper subscription
 az account set -s $subscription
