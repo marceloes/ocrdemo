@@ -6,6 +6,9 @@ param($rg, $location, $subscription, $cogSvcName, $storageAcctName, $functionApp
 #$storageAcctName = "cbrefunctstoragetst1"
 #$functionAppName = "nameplaterecognizerfunctionapp"
 
+Write-host "Login to Azure and proper subscription"
+az login -i
+
 Write-host "Connect to Azure and proper subscription"
 az account set -s $subscription
 
