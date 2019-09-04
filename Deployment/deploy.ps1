@@ -12,10 +12,10 @@ $appServicePlanName = $app + "svcplan" + $appServicePlanSku
 #Connect to Azure and proper subscription
 az account set -s $subscription
 
-#create resource group
+Write-host "create resource group"
 az group create --name $rg --location $location
 
-#create cognitive services instance
+Write-host "create cognitive services instance"
 $cogSvc = az cognitiveservices account create --kind "cognitiveservices" `
                                     --location $location `
                                     --name $cogSvcName `
@@ -27,7 +27,7 @@ $cogSvcEndpoint = ($cogSvc | ConvertFrom-Json).endpoint
 
 $cogSvcKey = (az cognitiveservices account keys list --name $cogSvcName -g $rg | ConvertFrom-Json).key1
 
-#create storage for function app
+Write-host "create storage for function app"
 $storageAcct = az storage account create --name $storageAcctName `
                           --resource-group $rg `
                           --location $location `
@@ -56,7 +56,7 @@ Push-Location $pathToFunction
 
 func azure functionapp publish $functionAppName --force
 
-#configure cognitive services connectivity settings
+Write-host "configure cognitive services connectivity settings"
 az functionapp config appsettings set --settings "COGNITIVE_SERVICES_BASE_URL=$cogSvcEndpoint" "COGNITIVE_SERVICES_SUBSCRIPTION_KEY=$cogSvcKey" `
                                       --name $functionAppName `
                                       --resource-group $rg
@@ -71,4 +71,4 @@ az resource update --resource-group $rg `
                    --name "$functionAppName/config/web" `
                    --set properties.preWarmedInstanceCount=2 `
                    --resource-type Microsoft.Web/sites --debug
-                   
+
