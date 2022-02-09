@@ -1,13 +1,13 @@
-param($rg, $location, $subscription, $cogSvcName, $storageAcctName, $functionAppName)
-#$rg = "__resource_group__"
-#$location = "canadacentral"
-#$subscription = "MS - Microsoft Azure Internal Consumption"
-#$cogSvcName = "cbrecogtst1"
-#$storageAcctName = "cbrefunctstoragetst1"
-#$functionAppName = "nameplaterecognizerfunctionapp"
+#param($rg, $location, $subscription, $cogSvcName, $storageAcctName, $functionAppName)
+$rg = "apim-demo-rg"
+$location = "southcentralus"
+$subscription = "<your subcription name>"
+$cogSvcName = "cogsvcdemo1"
+$storageAcctName = "recogstgacct1"
+$functionAppName = "nameplaterecognizerfunctionapp"
 
 Write-host "Login to Azure and proper subscription"
-az login -i
+az login
 
 Write-host "Connect to Azure and proper subscription"
 az account set -s $subscription
@@ -23,7 +23,12 @@ $cogSvc = az cognitiveservices account create --kind "cognitiveservices" `
                                     --sku "S0" `
                                     --yes
 
-$cogSvcEndpoint = ($cogSvc | ConvertFrom-Json).endpoint
+if (! $cogSvc) {
+    $cogSvc = az cognitiveservices account show --name $cogSvcName --resource-group $rg
+}
+
+
+$cogSvcEndpoint = ($cogSvc | ConvertFrom-Json).properties.endpoint
 
 $cogSvcKey = (az cognitiveservices account keys list --name $cogSvcName -g $rg | ConvertFrom-Json).key1
 
@@ -57,3 +62,16 @@ Pop-Location
 
 #get function URL so the Flow can be updated to call it
 func azure functionapp list-functions $functionAppName --show-keys
+
+# To get the organization URL from Power Platforms.
+# 
+
+# Navigate to Power Apps home page
+# Click Settings menu
+# Then click Session Details to open the Power Apps session details dialog box
+# Click Copy Details button and paste it in notepad
+
+# Make sure you're authenticated to Power Platforms
+# pac auth create --url https://<your-org>.crm.dynamics.com
+
+# pac solution export --path NameplatePowerAppSolution.zip --name NameplateSolution --managed false --incldue general
